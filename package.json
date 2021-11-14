@@ -1,0 +1,21 @@
+{
+  "name": "hokkbridge",
+  "version": "1.0.0",
+  "description": "Node.JS implementation of a crosschain messenging system",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.22.0",
+    "cors": "^2.8.5",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-rate-limit": "^5.5.0",
+    "mongoose": "^6.0.6",
+    "web3": "^1.5.2"
+  }
+}
