@@ -24,7 +24,526 @@ library SafeMath {
     }
 
     /**
-     * @dev Returns the multiplication of two unsigned integers, with an overflow flag.
+     * @dev Returns the multiplication of two unsigned integers, with an overfpragma solidity ^0.8.4;
+
+import './PortToken.sol';
+
+// File: contracts/IUniswapV2Router.sol
+
+
+interface IUniswapV2Router01 {
+    function factory() external pure returns (address);
+    function WETH() external pure returns (address);
+
+    function addLiquidity(
+        address tokenA,
+        address tokenB,
+        uint amountADesired,
+        uint amountBDesired,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountA, uint amountB, uint liquidity);
+    function addLiquidityETH(
+        address token,
+        uint amountTokenDesired,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline
+    ) external payable returns (uint amountToken, uint amountETH, uint liquidity);
+    function removeLiquidity(
+        address tokenA,
+        address tokenB,
+        uint liquidity,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountA, uint amountB);
+    function removeLiquidityETH(
+        address token,
+        uint liquidity,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountToken, uint amountETH);
+    function removeLiquidityWithPermit(
+        address tokenA,
+        address tokenB,
+        uint liquidity,
+        uint amountAMin,
+        uint amountBMin,
+        address to,
+        uint deadline,
+        bool approveMax, uint8 v, bytes32 r, bytes32 s
+    ) external returns (uint amountA, uint amountB);
+    function removeLiquidityETHWithPermit(
+        address token,
+        uint liquidity,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline,
+        bool approveMax, uint8 v, bytes32 r, bytes32 s
+    ) external returns (uint amountToken, uint amountETH);
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
+    function swapTokensForExactTokens(
+        uint amountOut,
+        uint amountInMax,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external returns (uint[] memory amounts);
+    function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
+        external
+        payable
+        returns (uint[] memory amounts);
+    function swapTokensForExactETH(uint amountOut, uint amountInMax, address[] calldata path, address to, uint deadline)
+        external
+        returns (uint[] memory amounts);
+    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+        external
+        returns (uint[] memory amounts);
+    function swapETHForExactTokens(uint amountOut, address[] calldata path, address to, uint deadline)
+        external
+        payable
+        returns (uint[] memory amounts);
+
+    function quote(uint amountA, uint reserveA, uint reserveB) external pure returns (uint amountB);
+    function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) external pure returns (uint amountOut);
+    function getAmountIn(uint amountOut, uint reserveIn, uint reserveOut) external pure returns (uint amountIn);
+    function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts);
+    function getAmountsIn(uint amountOut, address[] calldata path) external view returns (uint[] memory amounts);
+}
+
+
+
+// pragma solidity >=0.8.4;
+
+interface IUniswapV2Router02 is IUniswapV2Router01 {
+    function removeLiquidityETHSupportingFeeOnTransferTokens(
+        address token,
+        uint liquidity,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline
+    ) external returns (uint amountETH);
+    function removeLiquidityETHWithPermitSupportingFeeOnTransferTokens(
+        address token,
+        uint liquidity,
+        uint amountTokenMin,
+        uint amountETHMin,
+        address to,
+        uint deadline,
+        bool approveMax, uint8 v, bytes32 r, bytes32 s
+    ) external returns (uint amountETH);
+
+    function swapExactTokensForTokensSupportingFeeOnTransferTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external;
+    function swapExactETHForTokensSupportingFeeOnTransferTokens(
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external payable;
+    function swapExactTokensForETHSupportingFeeOnTransferTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external;
+}
+
+
+/**
+ * @dev Contract module which provides a basic access control mechanism, where
+ * there is an account (an owner) that can be granted exclusive access to
+ * specific functions.
+ *
+ * By default, the owner account will be the one that deploys the contract. This
+ * can later be changed with {transferOwnership}.
+ *
+ * This module is used through inheritance. It will make available the modifier
+ * `onlyOwner`, which can be applied to your functions to restrict their use to
+ * the owner.
+ */
+contract Ownable is Context {
+    address private _owner;
+    address private _previousOwner;
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    /**
+     * @dev Initializes the contract setting the deployer as the initial owner.
+     */
+    constructor () {
+        address msgSender = _msgSender();
+        _owner = msgSender;
+        emit OwnershipTransferred(address(0), msgSender);
+    }
+    
+    function setOwnableConstructor() internal {
+        address msgSender = _msgSender();
+        _owner = msgSender;
+    }
+
+    /**
+     * @dev Returns the address of the current owner.
+     */
+    function owner() public view returns (address) {
+        return _owner;
+    }
+
+    /**
+     * @dev Throws if called by any account other than the owner.
+     */
+    modifier onlyOwner() {
+        require(_owner == _msgSender(), "Ownable: caller is not the owner");
+        _;
+    }
+
+     /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions anymore. Can only be called by the current owner.
+     *
+     * NOTE: Renouncing ownership will leave the contract without an owner,
+     * thereby removing any functionality that is only available to the owner.
+     */
+    function renounceOwnership() public virtual onlyOwner {
+        emit OwnershipTransferred(_owner, address(0));
+        _owner = address(0);
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) public virtual onlyOwner {
+        require(newOwner != address(0), "Ownable: new owner is the zero address");
+        emit OwnershipTransferred(_owner, newOwner);
+        _owner = newOwner;
+    }
+
+    
+}
+
+contract Proxiable {
+    // Code position in storage is keccak256("PROXIABLE") = "0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7"
+
+    function updateCodeAddress(address newAddress) internal {
+        require(
+            bytes32(0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7) == Proxiable(newAddress).proxiableUUID(),
+            "Not compatible"
+        );
+        assembly { // solium-disable-line
+            sstore(0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7, newAddress)
+        }
+    }
+    function proxiableUUID() public pure returns (bytes32) {
+        return 0xc5f16f0fcc639fa48a6947836d9850f504798523bf8c9a3a87d5876cf622bcf7;
+    }
+}
+
+contract LibraryLockDataLayout {
+  bool public initialized = false;
+}
+
+contract LibraryLock is LibraryLockDataLayout {
+    // Ensures no one can manipulate the Logic Contract once it is deployed.
+    // PARITY WALLET HACK PREVENTION
+
+    modifier delegatedOnly() {
+        require(initialized == true, "The library is locked. No direct 'call' is allowed");
+        _;
+    }
+    function initialize() internal {
+        initialized = true;
+    }
+}
+
+contract DataLayout is LibraryLock {
+    string public startChain;
+    uint public chainId;
+    uint256 public nonce;
+    uint public threshold;
+    mapping(address => bool) public isValidSigner;
+    address[] public signersArr;
+    
+    //transactions being sent to contracts on external chains
+    uint256 public outboundIndex;
+    struct outboundTransactions {
+        address sender;
+        uint256 feeAmount;
+        address destination;
+        string chain;
+        string preferredNode;
+        string OPCode;
+    }
+    mapping(uint256 => outboundTransactions) public outboundHistory;
+    
+    //transactions being sent to contracts on local chain
+    uint256 public inboundIndex;
+    struct inboundTransactions {
+        uint256 amount;
+        address sender;
+        address destination;
+        string chain;
+    }
+    mapping(uint256 => inboundTransactions) public inboundHistory;
+    
+    mapping(address => bool) public allowedContracts;
+    
+    address public bridgeAddress;
+    
+    IUniswapV2Router02 public router;
+    address public localStableToken;
+    mapping(uint256 => mapping(address => bool)) public signHistory;
+    address public distributionContract;
+    mapping(string => uint256) public priceMapping;
+    mapping(bytes32 => bool) public usedHashes;
+}
+
+contract PortContract is ERC20, Ownable, Proxiable, DataLayout {
+    using SafeMath for uint256;
+    using SafeMath for uint32;
+    
+    constructor () ERC20("Telegraph", "MSG") {
+ 
+    }
+
+    function proxyConstructor(
+        string memory _startChain, 
+        uint _threshold, 
+        uint _chainId,
+        string memory _name,
+        string memory _symbol) public {
+        require(!initialized, "Contract is already initialized");
+        setOwnableConstructor();
+        ERCProxyConstructor(_name, _symbol);
+        startChain = _startChain;
+        threshold = _threshold;
+        chainId = _chainId;
+        //add creator as initial valid signer 
+        //mint initial supply
+        initialize();
+    }
+
+    function updateCode(address newCode) public delegatedOnly onlyOwner {
+        //, uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes
+        // signatureCheck(sigV, sigR, sigS, hashes);
+        updateCodeAddress(newCode);
+    }
+
+    receive() external payable {
+
+  	}
+    
+    event BridgeSwapOut(
+        address sender,
+        address destination,
+        string startChain,
+        string endChain,
+        uint256 feeAmount,
+        address startContract,
+        address[] addresses,
+        uint256[] numbers,
+        string[] strings,
+        bool[] bools
+    );
+
+    
+
+    event BridgeSwapIn(
+        string startChain,
+        address sender,
+        address destination, address[] addresses, uint256[] numbers, 
+        string[] strings, bool[] bools
+    );
+
+    event TestEmit(
+        string message,
+        address sender
+    );
+    
+    
+
+    function setThreshold(
+        uint _threshold,
+        uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
+        signatureCheck(sigV, sigR, sigS, hashes);
+        threshold = _threshold;
+    }
+
+    function testEvent() public {
+        emit TestEmit("This is a test", msg.sender);
+    }
+    
+    function setBridgeAddress(
+        address _address,
+        uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
+        signatureCheck(sigV, sigR, sigS, hashes);
+        bridgeAddress = _address;
+    }
+    
+    function setChainId(
+        uint _chainId,
+        uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
+        signatureCheck(sigV, sigR, sigS, hashes);
+        chainId = _chainId;
+    }
+    
+    function setContractStatus(
+        address _contract, 
+        bool status,
+        uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
+        signatureCheck(sigV, sigR, sigS, hashes);
+        allowedContracts[_contract] = status;
+    }
+    
+    function setDistributionContract(
+        address _contract,
+        uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
+        signatureCheck(sigV, sigR, sigS, hashes);
+        distributionContract = _contract;
+    }
+    
+    
+    function setPriceMapping(
+        string memory chain, 
+        uint256 price,
+        uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
+        signatureCheck(sigV, sigR, sigS, hashes);
+        priceMapping[chain] = price;
+    }
+        
+    function addSigner(
+        address _signer,
+        uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
+        signatureCheck(sigV, sigR, sigS, hashes);
+        require(_signer != address(0), "0 Address cannot be a signer");
+        require(!isValidSigner[_signer], "New signer cannot be an existing signer");
+        isValidSigner[_signer] = true;
+        signersArr.push(_signer);
+    }
+
+    function ownerAddSigner(address _signer) public onlyOwner {
+        require(_signer != address(0), "0 Address cannot be a signer");
+        require(!isValidSigner[_signer], "New signer cannot be an existing signer");
+        isValidSigner[_signer] = true;
+        signersArr.push(_signer);
+    }
+    
+    function outboundMessage(
+        address sender,
+        address destination,
+        address[] memory addresses, uint256[] memory numbers, 
+        string[] memory strings, bool[] memory bools,
+        string memory endChain) public payable {
+            require(msg.value > 0, "Fee amount must be greater than 0");
+            outboundIndex = outboundIndex.add(1);
+            outboundHistory[outboundIndex].sender = sender;
+            outboundHistory[outboundIndex].feeAmount = msg.value;
+            outboundHistory[outboundIndex].destination = destination;
+            outboundHistory[outboundIndex].chain = endChain;
+            outboundHistory[outboundIndex].OPCode = 'BRIDGEMESSAGEOUT';
+            require(msg.value >= priceMapping[endChain], "Minimum bridge fee required");
+            payable(distributionContract).transfer(msg.value);
+            
+            emit BridgeSwapOut(
+                sender, destination, 
+                startChain, endChain, 
+                msg.value, msg.sender, addresses, numbers, strings, bools);
+    }
+
+    
+    
+    function determineFeeInCoin(string memory endChain) public view returns(uint256) {
+        //return getEstimatedStableforCoin(priceMapping[endChain])[0];
+        return priceMapping[endChain];
+    }
+    
+    function getEstimatedStableforCoin(uint coinAmount) public view returns (uint[] memory) {
+        return router.getAmountsIn(coinAmount, getPathForCointoStable());
+    }
+
+    function getPathForCointoStable() private view returns (address[] memory) {
+        address[] memory path = new address[](2);
+        path[0] = router.WETH();
+        path[1] = localStableToken;
+        
+        return path;
+    }
+    
+    function inboundMessage(
+        string memory _startChain,
+        address sender,
+        address destination,
+        address[] memory addresses, uint256[] memory numbers, string[] memory strings, bool[] memory bools) internal {
+        
+        inboundIndex = inboundIndex.add(1);
+        inboundHistory[inboundIndex].sender = sender;
+        inboundHistory[inboundIndex].destination = destination;
+        inboundHistory[inboundIndex].chain = _startChain;
+        
+        DestinationContract(destination).portMessage(addresses, numbers, strings, bools);
+        emit BridgeSwapIn(
+            startChain, sender, destination,
+            addresses, numbers, strings, bools
+        );
+    }
+
+    // addresses, numbers, strings, bools, bytesArr
+    
+
+    // Note that address recovered from signatures must be strictly increasing, in order to prevent duplicates
+    function executeInboundMessage(
+        string memory _startChain,
+        address sender,
+        address destination,
+        address[] memory addresses, uint256[] memory numbers, string[] memory strings, bool[] memory bools,
+        uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
+        signatureCheck(sigV, sigR, sigS, hashes);
+        inboundMessage(_startChain, sender, destination, addresses, numbers, strings, bools);
+        //mint
+    }
+
+    function signatureCheck(uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) internal {
+        require(sigR.length >= threshold, "sigR must meet or exceed threshold");
+        require(sigR.length == sigS.length && sigR.length == sigV.length, "sigR length must equal sigS");
+        require(isValidSigner[msg.sender], "Caller must be a valid signer");
+        require(!usedHashes[hashes[0]], "Invalid hash");
+
+        for (uint i = 0; i < threshold; i++) {
+            address recovered = ecrecover(hashes[0], sigV[i], sigR[i], sigS[i]);
+            require(!signHistory[nonce][recovered] && isValidSigner[recovered], "Invalid signer");
+            signHistory[nonce][recovered] = true;
+        }
+
+        usedHashes[hashes[0]] = true;
+        nonce = nonce + 1;
+    }
+    
+}
+
+interface DestinationContract {
+    function portMessage(address[] memory addresses, uint256[] memory numbers, string[] memory strings, bool[] memory bools) external;
+}low flag.
      *
      * _Available since v3.4._
      */
