@@ -391,7 +391,9 @@ contract DataLayout is LibraryLock {
     uint256 public outboundIndex;
     struct outboundTransactions {
         address sender;
+        uint256 amount;
         uint256 feeAmount;
+        address recipient;
         address destination;
         string chain;
         string preferredNode;
@@ -448,23 +450,27 @@ contract PortContract is Ownable, Proxiable, DataLayout {
     
     event BridgeSwapOut(
         address sender,
+        address recipient,
         address destination,
+        uint256 amount,
         string startChain,
         string endChain,
         string preferredNode,
         uint256 feeAmount,
-        address startContract,
-        address[] addresses,
-        uint256[] numbers,
-        string[] strings,
-        bool[] bools,
-        bytes32[] bytesArr
+        address startContract
+        
     );
 
     event BridgeSwapIn(
         string startChain,
         address sender,
-        address destination,
+        address recipient,
+        uint256 amount
+    );
+
+    event TestEmit(
+        string message,
+        address sender
     );
 
     modifier onlyBridge {
@@ -487,6 +493,10 @@ contract PortContract is Ownable, Proxiable, DataLayout {
     
     function setChainId(uint _chainId) public onlyOwner {
         chainId = _chainId;
+    }
+
+    function testEvent() public {
+        emit TestEmit("This is a test", msg.sender);
     }
     
     function setContractStatus(address _contract, bool status) public onlyOwner {
@@ -512,29 +522,26 @@ contract PortContract is Ownable, Proxiable, DataLayout {
     }
     
     function outboundSwap(
-        address sender,
+        address sender, 
+        address recipient,
+        uint256 amount,
         address destination,
-        address[] memory addresses, uint256[] memory numbers, 
-        string[] memory strings, bool[] memory bools, 
-        bytes32[] memory bytesArr,
         string memory endChain,
-        string memory preferredNode) public payable {
-            require(msg.value > 0, "Fee amount must be greater than 0");
-            outboundIndex = outboundIndex.add(1);
-            outboundHistory[outboundIndex].sender = sender;
-            outboundHistory[outboundIndex].feeAmount = msg.value;
-            outboundHistory[outboundIndex].startContract = msg.sender;
-            outboundHistory[outboundIndex].destination = destination;
-            outboundHistory[outboundIndex].chain = endChain;
-            outboundHistory[outboundIndex].preferredNode = preferredNode;
-            require(msg.value >= priceMapping[endChain], "Minimum bridge fee required");
-            payable(foundationWallet).transfer(msg.value);
-            
-            emit BridgeSwapOut(
-                sender, destination, 
-                startChain, endChain, 
-                preferredNode, msg.value, msg.sender,
-                addresses, numbers, strings, bools, bytesArr);
+        string memory preferredNode) public payable onlyAllowed {
+        require(msg.value > 0, "Fee amount must be greater than 0");
+        outboundIndex = outboundIndex.add(1);
+        outboundHistory[outboundIndex].sender = sender;
+        outboundHistory[outboundIndex].amount = amount;
+        outboundHistory[outboundIndex].feeAmount = msg.value;
+        outboundHistory[outboundIndex].startContract = msg.sender;
+        outboundHistory[outboundIndex].destination = destination;
+        outboundHistory[outboundIndex].recipient = recipient;
+        outboundHistory[outboundIndex].chain = endChain;
+        outboundHistory[outboundIndex].preferredNode = preferredNode;
+        require(msg.value >= priceMapping[endChain], "Minimum bridge fee required");
+        payable(foundationWallet).transfer(msg.value);
+        
+        emit BridgeSwapOut(sender, recipient, destination, amount, startChain, endChain, preferredNode, msg.value, msg.sender);
     }
     
     function determineFeeInCoin(string memory endChain) public view returns(uint256) {
@@ -557,15 +564,17 @@ contract PortContract is Ownable, Proxiable, DataLayout {
     function inboundSwap(
         string memory _startChain,
         address sender,
+        address recipient,
         address destination,
-        address[] memory addresses, uint256[] memory numbers, string[] memory strings, bool[] memory bools, bytes32[] memory bytesArr) internal {
+        uint256 amount) internal {
         
         inboundIndex = inboundIndex.add(1);
+        inboundHistory[inboundIndex].amount = amount;
         inboundHistory[inboundIndex].sender = sender;
-        inboundHistory[inboundIndex].destination = destination;
+        inboundHistory[inboundIndex].recipient = recipient;
         inboundHistory[inboundIndex].chain = _startChain;
         
-        DestinationContract(destination).portMessage(addresses, numbers, strings, bools, bytesArr);
+        HokkContract(destination).portMessage(recipient, amount);
         emit BridgeSwapIn(startChain, sender, recipient, amount);
     }
     
@@ -574,8 +583,9 @@ contract PortContract is Ownable, Proxiable, DataLayout {
     function execute(
         string memory _startChain,
         address sender,
+        address recipient,
         address destination,
-        address[] memory addresses, uint256[] memory numbers, string[] memory strings, bool[] memory bools, bytes32[] memory bytesArr,
+        uint256 amount,
         uint8[] memory sigV, bytes32[] memory sigR, bytes32[] memory sigS, bytes32[] memory hashes) public {
         require(sigR.length >= threshold, "sigR must meet or exceed threshold");
         require(sigR.length == sigS.length && sigR.length == sigV.length, "sigR length must equal sigS");
@@ -591,11 +601,11 @@ contract PortContract is Ownable, Proxiable, DataLayout {
 
         usedHashes[hashes[0]] = true;
         nonce = nonce + 1;
-        inboundSwap(_startChain, sender, destination, addresses, numbers, strings, bools, bytesArr);
+        inboundSwap(_startChain, sender, recipient, destination, amount);
     }
     
 }
 
-interface DestinationContract {
-    function portMessage(address[] memory addresses, uint256[] memory numbers, string[] memory strings, bool[] memory bools, bytes32[] memory bytesArr) external;
+interface HokkContract {
+    function portMessage(address recipient, uint256 amount) external;
 }
